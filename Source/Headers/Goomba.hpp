@@ -17,9 +17,9 @@ class Goomba : public Enemy
 
 	unsigned short death_timer;
 
-	sf::Sprite sprite;
-
 	sf::Texture texture;
+
+	sf::Sprite sprite{texture};
 
 	Animation walk_animation;
 public:

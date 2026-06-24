@@ -20,9 +20,9 @@ class Koopa : public Enemy
 
 	unsigned short get_out_timer;
 
-	sf::Sprite sprite;
-
 	sf::Texture texture;
+
+	sf::Sprite sprite{texture};
 
 	Animation get_out_animation;
 	Animation walk_animation;

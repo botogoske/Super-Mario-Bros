@@ -1,5 +1,9 @@
 #pragma once
 
+#include <array>
+#include <chrono>
+#include <vector>
+
 constexpr float BRICK_PARTICLE_SPEED = 4;
 //A coin jumping out of the question block.
 constexpr float COIN_JUMP_SPEED = -6;

@@ -7,9 +7,9 @@ class MapManager
 
 	sf::Image map_sketch;
 
-	sf::Sprite cell_sprite;
-
 	sf::Texture map_texture;
+
+	sf::Sprite cell_sprite{map_texture};
 
 	Animation coin_animation;
 	Animation question_block_animation;

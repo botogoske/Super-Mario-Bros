@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <chrono>
+#include <stdexcept>
 #include <SFML/Graphics.hpp>
 
 #include "Headers/Animation.hpp"
@@ -26,11 +28,13 @@ Koopa::Koopa(const bool i_underground, const float i_x, const float i_y) :
 
 	if (0 == underground)
 	{
-		texture.loadFromFile("Resources/Images/KoopaShell.png");
+		if (!texture.loadFromFile("Resources/Images/KoopaShell.png"))
+			throw std::runtime_error("Failed to load texture");
 	}
 	else
 	{
-		texture.loadFromFile("Resources/Images/UndergroundKoopaShell.png");
+		if (!texture.loadFromFile("Resources/Images/UndergroundKoopaShell.png"))
+			throw std::runtime_error("Failed to load texture");
 
 		get_out_animation.set_texture_location("Resources/Images/UndergroundKoopaGetOut.png");
 		walk_animation.set_texture_location("Resources/Images/UndergroundKoopaWalk.png");
@@ -69,11 +73,13 @@ void Koopa::die(const unsigned char i_death_type)
 
 			if (0 == underground)
 			{
-				texture.loadFromFile("Resources/Images/KoopaDeath.png");
+				if (!texture.loadFromFile("Resources/Images/KoopaDeath.png"))
+					throw std::runtime_error("Failed to load texture");
 			}
 			else
 			{
-				texture.loadFromFile("Resources/Images/UndergroundKoopaDeath.png");
+				if (!texture.loadFromFile("Resources/Images/UndergroundKoopaDeath.png"))
+					throw std::runtime_error("Failed to load texture");
 			}
 		}
 	}
@@ -92,7 +98,7 @@ void Koopa::draw(const unsigned i_view_x, sf::RenderWindow& i_window)
 			}
 			else
 			{
-				sprite.setPosition(round(x), round(y));
+				sprite.setPosition({static_cast<float>(round(x)), static_cast<float>(round(y))});
 				sprite.setTexture(texture);
 
 				i_window.draw(sprite);
@@ -122,7 +128,7 @@ void Koopa::update(const unsigned i_view_x, const std::vector<std::shared_ptr<En
 
 			sf::FloatRect hit_box = get_hit_box();
 
-			hit_box.top += vertical_speed;
+			hit_box.position.y += vertical_speed;
 
 			collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 
@@ -148,17 +154,17 @@ void Koopa::update(const unsigned i_view_x, const std::vector<std::shared_ptr<En
 
 				for (unsigned short a = 0; a < i_enemies.size(); a++)
 				{
-					if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && 1 == hit_box.intersects(i_enemies[a]->get_hit_box()))
+					if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && hit_box.findIntersection(i_enemies[a]->get_hit_box()).has_value())
 					{
 						changed = 1;
 
 						if (0 > vertical_speed)
 						{
-							y = i_enemies[a]->get_hit_box().top + i_enemies[a]->get_hit_box().height;
+							y = i_enemies[a]->get_hit_box().position.y + i_enemies[a]->get_hit_box().size.y;
 						}
 						else
 						{
-							y = i_enemies[a]->get_hit_box().top - CELL_SIZE;
+							y = i_enemies[a]->get_hit_box().position.y - CELL_SIZE;
 						}
 
 						vertical_speed = 0;
@@ -174,7 +180,7 @@ void Koopa::update(const unsigned i_view_x, const std::vector<std::shared_ptr<En
 			}
 
 			hit_box = get_hit_box();
-			hit_box.left += horizontal_speed;
+			hit_box.position.x += horizontal_speed;
 
 			collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 
@@ -200,7 +206,7 @@ void Koopa::update(const unsigned i_view_x, const std::vector<std::shared_ptr<En
 
 				for (unsigned short a = 0; a < i_enemies.size(); a++)
 				{
-					if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && 1 == hit_box.intersects(i_enemies[a]->get_hit_box()))
+					if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && hit_box.findIntersection(i_enemies[a]->get_hit_box()).has_value())
 					{
 						if (0 == state)
 						{
@@ -223,7 +229,7 @@ void Koopa::update(const unsigned i_view_x, const std::vector<std::shared_ptr<En
 				}
 			}
 
-			if (0 == i_mario.get_dead() && 1 == get_hit_box().intersects(i_mario.get_hit_box()))
+			if (0 == i_mario.get_dead() && get_hit_box().findIntersection(i_mario.get_hit_box()).has_value())
 			{
 				if (1 == check_collision)
 				{

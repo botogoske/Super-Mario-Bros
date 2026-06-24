@@ -23,13 +23,13 @@ void draw_map(unsigned i_view_x, const sf::Image& i_map_sketch, sf::RenderWindow
 			unsigned short sprite_x = 0;
 			unsigned short sprite_y = 0;
 
-			sf::Color pixel = i_map_sketch.getPixel(a, b + 2 * map_height);
+			sf::Color pixel = i_map_sketch.getPixel({static_cast<unsigned>(a), static_cast<unsigned>(b + 2 * map_height)});
 			sf::Color pixel_down = sf::Color(0, 0, 0, 0);
 			sf::Color pixel_left = sf::Color(0, 0, 0, 0);
 			sf::Color pixel_right = sf::Color(0, 0, 0, 0);
 			sf::Color pixel_up = sf::Color(0, 0, 0, 0);
 
-			cell_sprite.setPosition(CELL_SIZE * a, CELL_SIZE * b);
+			cell_sprite.setPosition({static_cast<float>(CELL_SIZE * a), static_cast<float>(CELL_SIZE * b)});
 			
 			//Ignore the empty pixels.
 			if (255 == pixel.a)
@@ -37,22 +37,22 @@ void draw_map(unsigned i_view_x, const sf::Image& i_map_sketch, sf::RenderWindow
 				//Here we're getting pixels around the pixel we're currently checking.
 				if (0 < a)
 				{
-					pixel_left = i_map_sketch.getPixel(a - 1, b + 2 * map_height);
+					pixel_left = i_map_sketch.getPixel({static_cast<unsigned>(a - 1), static_cast<unsigned>(b + 2 * map_height)});
 				}
 
 				if (0 < b)
 				{
-					pixel_up = i_map_sketch.getPixel(a, b + 2 * map_height - 1);
+					pixel_up = i_map_sketch.getPixel({static_cast<unsigned>(a), static_cast<unsigned>(b + 2 * map_height - 1)});
 				}
 
 				if (a < i_map_sketch.getSize().x - 1)
 				{
-					pixel_right = i_map_sketch.getPixel(1 + a, b + 2 * map_height);
+					pixel_right = i_map_sketch.getPixel({static_cast<unsigned>(1 + a), static_cast<unsigned>(b + 2 * map_height)});
 				}
 
 				if (b < map_height - 1)
 				{
-					pixel_down = i_map_sketch.getPixel(a, 1 + b + 2 * map_height);
+					pixel_down = i_map_sketch.getPixel({static_cast<unsigned>(a), static_cast<unsigned>(1 + b + 2 * map_height)});
 				}
 
 				//Nothing complicated here.
@@ -135,7 +135,7 @@ void draw_map(unsigned i_view_x, const sf::Image& i_map_sketch, sf::RenderWindow
 					}
 				}
 
-				cell_sprite.setTextureRect(sf::IntRect(CELL_SIZE * sprite_x, CELL_SIZE * sprite_y, CELL_SIZE, CELL_SIZE));
+				cell_sprite.setTextureRect(sf::IntRect({CELL_SIZE * sprite_x, CELL_SIZE * sprite_y}, {CELL_SIZE, CELL_SIZE}));
 
 				i_window.draw(cell_sprite);
 			}
@@ -172,7 +172,7 @@ void draw_map(unsigned i_view_x, const sf::Image& i_map_sketch, sf::RenderWindow
 				{
 					sprite_y = 0;
 
-					if (sf::Color(0, 0, 0) == i_map_sketch.getPixel(a, b)) //Walls
+					if (sf::Color(0, 0, 0) == i_map_sketch.getPixel({static_cast<unsigned>(a), static_cast<unsigned>(b)})) //Walls
 					{
 						sprite_x = 2;
 					}
@@ -182,7 +182,7 @@ void draw_map(unsigned i_view_x, const sf::Image& i_map_sketch, sf::RenderWindow
 					}
 				}
 
-				cell_sprite.setTextureRect(sf::IntRect(CELL_SIZE * sprite_x, CELL_SIZE * sprite_y, CELL_SIZE, CELL_SIZE));
+				cell_sprite.setTextureRect(sf::IntRect({CELL_SIZE * sprite_x, CELL_SIZE * sprite_y}, {CELL_SIZE, CELL_SIZE}));
 
 				i_window.draw(cell_sprite);
 			}

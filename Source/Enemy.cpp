@@ -31,5 +31,5 @@ void Enemy::die(const unsigned char i_death_type)
 
 sf::FloatRect Enemy::get_hit_box() const
 {
-	return sf::FloatRect(x, y, CELL_SIZE, CELL_SIZE);
+	return sf::FloatRect({x, y}, {CELL_SIZE, CELL_SIZE});
 }

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -30,12 +31,10 @@ int main()
 
 	sf::Color background_color = sf::Color(0, 219, 255);
 
-	sf::Event event;
-
-	sf::RenderWindow window(sf::VideoMode(SCREEN_RESIZE * SCREEN_WIDTH, SCREEN_RESIZE * SCREEN_HEIGHT), "Super Mario Bros", sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(sf::Vector2u(SCREEN_RESIZE * SCREEN_WIDTH, SCREEN_RESIZE * SCREEN_HEIGHT)), "Super Mario Bros", sf::Style::Close);
 	window.setPosition(sf::Vector2i(window.getPosition().x, window.getPosition().y - 90));
 
-	sf::View view(sf::FloatRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+	sf::View view(sf::FloatRect({0, 0}, {SCREEN_WIDTH, SCREEN_HEIGHT}));
 
 	MapManager map_manager;
 
@@ -67,29 +66,21 @@ int main()
 
 			lag -= FRAME_DURATION;
 
-			while (1 == window.pollEvent(event))
+			while (auto event = window.pollEvent())
 			{
-				switch (event.type)
+				if (event->is<sf::Event::Closed>())
 				{
-					case sf::Event::Closed:
+					window.close();
+				}
+				else if (auto* key_pressed = event->getIf<sf::Event::KeyPressed>())
+				{
+					if (sf::Keyboard::Key::Enter == key_pressed->code)
 					{
-						window.close();
+						enemies.clear();
 
-						break;
-					}
-					case sf::Event::KeyPressed:
-					{
-						switch (event.key.code)
-						{
-							case sf::Keyboard::Enter:
-							{
-								enemies.clear();
+						mario.reset();
 
-								mario.reset();
-
-								convert_sketch(current_level, level_finish, enemies, background_color, map_manager, mario);
-							}
-						}
+						convert_sketch(current_level, level_finish, enemies, background_color, map_manager, mario);
 					}
 				}
 			}
@@ -131,7 +122,8 @@ int main()
 
 			if (FRAME_DURATION > lag)
 			{
-				view.reset(sf::FloatRect(view_x, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+				view.setSize({SCREEN_WIDTH, SCREEN_HEIGHT});
+			view.setCenter({view_x + SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f});
 
 				window.setView(view);
 				window.clear(background_color);

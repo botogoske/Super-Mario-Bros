@@ -14,9 +14,9 @@ class Animation
 	unsigned short frame_width;
 	unsigned short total_frames;
 
-	sf::Sprite sprite;
-
 	sf::Texture texture;
+
+	sf::Sprite sprite{texture};
 public:
 	Animation(const unsigned short i_frame_width, const std::string& i_texture_location, const unsigned short i_animation_speed = 1);
 

@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <chrono>
+#include <stdexcept>
 #include <SFML/Graphics.hpp>
 
 #include "Headers/Animation.hpp"
@@ -22,11 +24,13 @@ Goomba::Goomba(const bool i_underground, const float i_x, const float i_y) :
 
 	if (0 == underground)
 	{
-		texture.loadFromFile("Resources/Images/GoombaDeath0.png");
+		if (!texture.loadFromFile("Resources/Images/GoombaDeath0.png"))
+			throw std::runtime_error("Failed to load texture");
 	}
 	else
 	{
-		texture.loadFromFile("Resources/Images/UndergroundGoombaDeath0.png");
+		if (!texture.loadFromFile("Resources/Images/UndergroundGoombaDeath0.png"))
+			throw std::runtime_error("Failed to load texture");
 
 		walk_animation.set_texture_location("Resources/Images/UndergroundGoombaWalk.png");
 	}
@@ -76,11 +80,13 @@ void Goomba::die(const unsigned char i_death_type)
 
 				if (0 == underground)
 				{
-					texture.loadFromFile("Resources/Images/GoombaDeath1.png");
+					if (!texture.loadFromFile("Resources/Images/GoombaDeath1.png"))
+						throw std::runtime_error("Failed to load texture");
 				}
 				else
 				{
-					texture.loadFromFile("Resources/Images/UndergroundGoombaDeath1.png");
+					if (!texture.loadFromFile("Resources/Images/UndergroundGoombaDeath1.png"))
+						throw std::runtime_error("Failed to load texture");
 				}
 			}
 		}
@@ -94,7 +100,7 @@ void Goomba::draw(const unsigned i_view_x, sf::RenderWindow& i_window)
 	{
 		if (1 == no_collision_dying || GOOMBA_DEATH_DURATION > death_timer)
 		{
-			sprite.setPosition(round(x), round(y));
+			sprite.setPosition({static_cast<float>(round(x)), static_cast<float>(round(y))});
 			sprite.setTexture(texture);
 
 			i_window.draw(sprite);
@@ -122,7 +128,7 @@ void Goomba::update(const unsigned i_view_x, const std::vector<std::shared_ptr<E
 
 		vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
 
-		hit_box.top += vertical_speed;
+		hit_box.position.y += vertical_speed;
 
 		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 
@@ -153,17 +159,17 @@ void Goomba::update(const unsigned i_view_x, const std::vector<std::shared_ptr<E
 				{
 					for (unsigned short a = 0; a < i_enemies.size(); a++)
 					{
-						if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && 1 == hit_box.intersects(i_enemies[a]->get_hit_box()))
+						if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && hit_box.findIntersection(i_enemies[a]->get_hit_box()).has_value())
 						{
 							changed = 1;
 
 							if (0 > vertical_speed)
 							{
-								y = i_enemies[a]->get_hit_box().height + i_enemies[a]->get_hit_box().top;
+								y = i_enemies[a]->get_hit_box().size.y + i_enemies[a]->get_hit_box().position.y;
 							}
 							else
 							{
-								y = i_enemies[a]->get_hit_box().top - CELL_SIZE;
+								y = i_enemies[a]->get_hit_box().position.y - CELL_SIZE;
 							}
 
 							vertical_speed = 0;
@@ -182,7 +188,7 @@ void Goomba::update(const unsigned i_view_x, const std::vector<std::shared_ptr<E
 			if (0 == get_dead(0))
 			{
 				hit_box = get_hit_box();
-				hit_box.left += horizontal_speed;
+				hit_box.position.x += horizontal_speed;
 
 				collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 
@@ -209,7 +215,7 @@ void Goomba::update(const unsigned i_view_x, const std::vector<std::shared_ptr<E
 					//Changing direction when colliding with another enemy.
 					for (unsigned short a = 0; a < i_enemies.size(); a++)
 					{
-						if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && 1 == hit_box.intersects(i_enemies[a]->get_hit_box()))
+						if (shared_from_this() != i_enemies[a] && 0 == i_enemies[a]->get_dead(0) && hit_box.findIntersection(i_enemies[a]->get_hit_box()).has_value())
 						{
 							changed = 1;
 
@@ -225,7 +231,7 @@ void Goomba::update(const unsigned i_view_x, const std::vector<std::shared_ptr<E
 					}
 				}
 
-				if (0 == i_mario.get_dead() && 1 == get_hit_box().intersects(i_mario.get_hit_box()))
+				if (0 == i_mario.get_dead() && get_hit_box().findIntersection(i_mario.get_hit_box()).has_value())
 				{
 					//If Mario is falling...
 					if (0 < i_mario.get_vertical_speed())

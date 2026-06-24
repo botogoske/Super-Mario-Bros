@@ -34,9 +34,9 @@ class Mario
 
 	std::vector<Mushroom> mushrooms;
 
-	sf::Sprite sprite;
-
 	sf::Texture texture;
+
+	sf::Sprite sprite{texture};
 
 	Animation big_walk_animation;
 	Animation walk_animation;

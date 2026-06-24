@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <stdexcept>
 #include <SFML/Graphics.hpp>
 
 #include "Headers/Animation.hpp"
@@ -15,7 +17,8 @@ Mushroom::Mushroom(const float i_x, const float i_y) :
 	y(i_y),
 	start_y(i_y)
 {
-	texture.loadFromFile("Resources/Images/Mushroom.png");
+	if (!texture.loadFromFile("Resources/Images/Mushroom.png"))
+		throw std::runtime_error("Failed to load texture");
 }
 
 bool Mushroom::get_dead() const
@@ -27,7 +30,7 @@ void Mushroom::draw(const unsigned i_view_x, sf::RenderWindow& i_window)
 {
 	if (-CELL_SIZE < round(y) && round(x) > static_cast<int>(i_view_x) - CELL_SIZE && round(x) < SCREEN_WIDTH + i_view_x && round(y) < SCREEN_HEIGHT)
 	{
-		sprite.setPosition(round(x), round(y));
+		sprite.setPosition({static_cast<float>(round(x)), static_cast<float>(round(y))});
 		sprite.setTexture(texture);
 
 		i_window.draw(sprite);
@@ -66,7 +69,7 @@ void Mushroom::update(const unsigned i_view_x, const MapManager& i_map_manager)
 
 				vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
 
-				collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, sf::FloatRect(x, vertical_speed + y, CELL_SIZE, CELL_SIZE));
+				collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, sf::FloatRect({x, vertical_speed + y}, {CELL_SIZE, CELL_SIZE}));
 
 				if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
 				{
@@ -89,7 +92,7 @@ void Mushroom::update(const unsigned i_view_x, const MapManager& i_map_manager)
 					y += vertical_speed;
 				}
 
-				horizontal_hit_box = {MUSHROOM_SPEED * horizontal_direction + x, y, CELL_SIZE, CELL_SIZE};
+				horizontal_hit_box = sf::FloatRect({MUSHROOM_SPEED * horizontal_direction + x, y}, {CELL_SIZE, CELL_SIZE});
 
 				collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, horizontal_hit_box);
 
@@ -125,5 +128,5 @@ void Mushroom::update(const unsigned i_view_x, const MapManager& i_map_manager)
 
 sf::FloatRect Mushroom::get_hit_box() const
 {
-	return sf::FloatRect(x, y, CELL_SIZE, CELL_SIZE);
+	return sf::FloatRect({x, y}, {CELL_SIZE, CELL_SIZE});
 }
